@@ -44,7 +44,6 @@ public class WaveSplitter {
 	private Project project;
 	private JFrame frame;
 	private WavFilePlayer player;
-	private File waveFile;
 	private TableModel tableModel;
 	private JPanel trackPanel;
 	private AudioInfo audioInfo;
@@ -110,7 +109,7 @@ public class WaveSplitter {
 			frame.getContentPane().removeAll();
 
 			Optional<File> waveFileOptional = project.getWavFile();
-			File wavFile = waveFileOptional.orNull();
+			File waveFile = waveFileOptional.orNull();
 			if (!waveFileOptional.isPresent() || !waveFile.exists()) {
 				JFileChooser chooser = new JFileChooser(new File("."));
 				FileNameExtensionFilter filter = new FileNameExtensionFilter("Wave File", "wav");
@@ -118,6 +117,7 @@ public class WaveSplitter {
 				int returnVal = chooser.showOpenDialog(frame);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					waveFile = chooser.getSelectedFile();
+					project.setWaveFile(waveFile);
 				}
 			}
 
@@ -166,6 +166,7 @@ public class WaveSplitter {
 		int returnVal = chooser.showOpenDialog(null);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			propertiesFile = chooser.getSelectedFile();
+			project = new Project();
 			project.load(propertiesFile);
 		} else {
 			System.err.println("No file selected");
@@ -176,7 +177,7 @@ public class WaveSplitter {
 		tableModel = new TracksTableModel(audioInfo, tracks);
 		JButton createWavButton = createImageButton("accept.png");
 		createWavButton.setToolTipText("Create wave and mp3 files");
-		createWavButton.addActionListener(new CreateWavAction(waveDisplayPanel, tracks, waveFile, project));
+		createWavButton.addActionListener(new CreateWavAction(waveDisplayPanel, tracks, project));
 
 		JButton saveButton = createImageButton("save.png");
 		saveButton.setToolTipText("Save");

@@ -47,7 +47,7 @@ public class LameEncoder {
 		Optional<File> albumIconFile = project.getAlbumIcon();
 		if (albumIconFile.isPresent()) {
 			commands.add("--ti");
-			commands.add("" + albumIconFile);
+			commands.add("" + albumIconFile.get().getAbsolutePath());
 		}
 		commands.add(wavFile.getAbsolutePath());
 		commands.add(outFile.getAbsolutePath());

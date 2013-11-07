@@ -73,7 +73,7 @@ public class AudioInfo {
 		createSampleArrayCollection(getStartPos(), getEndPos(), numSamples);
 	}
 
-	public void createSampleArrayCollection(long startPos, long endPos,
+	private void createSampleArrayCollection(long startPos, long endPos,
 			int numSamples) {
 		sampleMax = 0;
 		sampleMin = 0;
@@ -81,7 +81,7 @@ public class AudioInfo {
 		try {
 			initAudioStream();
 			long skipped = skip(startPos);
-			System.out.println(startPos + " " + skipped);
+			System.out.println("reading " + startPos + " " + skipped + " " + endPos);
 			long streamLength = endPos - startPos;
 
 			int sampleSize = getNumberOfChannels() * 2;
@@ -97,14 +97,17 @@ public class AudioInfo {
 				read += skip(chunkSize - sampleSize);
 				// System.out.println(" " + chunkSize + " " + read);
 				System.arraycopy(chunk, 0, samples, offset, sampleSize);
-				streamLength -= read;
+				streamLength -= read;				
 				numSamples--;
 				offset += sampleSize;
 				totalRead += read;
-				samplesContainer = getSampleArray(samples);
 			}
+			samplesContainer = getSampleArray(samples);
 			System.out.println(totalRead);
 			System.out.println(endPos);
+			if (totalRead > endPos) {
+				setEndPos(totalRead);
+			}
 			// long rewind = audioInputStream.skip(-totalRead);
 			// System.out.println(rewind);
 
@@ -187,6 +190,7 @@ public class AudioInfo {
 	}
 
 	public void setStartPos(long startPos) {
+		System.out.println("Request start pos = " + startPos + ". Current value = " + this.startPos);
 		if (startPos < 0) {
 			this.startPos = 0;
 		} else if (startPos > streamLength) {
@@ -194,9 +198,11 @@ public class AudioInfo {
 		} else {
 			this.startPos = startPos;
 		}
+		System.out.println("New start pos = " + this.startPos);
 	}
 
 	public void setEndPos(long endPos) {
+		System.out.println("Request end pos = " + endPos + ". Current value = " + this.endPos);
 		if (endPos < 0) {
 			this.endPos = 0;
 		} else if (endPos > streamLength) {
@@ -204,6 +210,7 @@ public class AudioInfo {
 		} else {
 			this.endPos = endPos;
 		}
+		System.out.println("New end pos = " + this.endPos);
 	}
 
 	public double toSeconds(long position) {

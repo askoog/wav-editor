@@ -2,22 +2,21 @@ package se.askware.audio;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
 import javax.swing.JPanel;
 
-public class SingleWaveformPanel extends JPanel implements
-		PlayerPositionListener, ComponentListener {
+public class SingleWaveformPanel extends JPanel implements PlayerPositionListener, ComponentListener {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -5247859527018719223L;
 	protected static final Color BACKGROUND_COLOR = Color.white;
 	protected static final Color REFERENCE_LINE_COLOR = Color.black;
-	protected static final Color[] WAVEFORM_COLOR = new Color[] {
-			Color.DARK_GRAY, Color.LIGHT_GRAY };
+	protected static final Color[] WAVEFORM_COLOR = new Color[] { Color.DARK_GRAY, Color.LIGHT_GRAY };
 	private static final Color PLAY_MARKER_COLOR = Color.CYAN;
 
 	private AudioInfo audio;
@@ -25,13 +24,16 @@ public class SingleWaveformPanel extends JPanel implements
 	private long playerPosition;
 
 	enum Mode {
-		MOVE_START, MOVE_END, NONE
+		MOVE_START, MOVE_END, ZOOM, NONE
 	}
 
 	private Mode mode;
 	private TracksHandler tracks;
 	private Track currentEditedTrack = null;
 	private Track currentPlayedTrack = null;
+	private int markerPos;
+	private int zoomStartPos;
+	private int zoomEndPos;
 
 	public SingleWaveformPanel(AudioInfo audio, TracksHandler tracks) {
 		this.audio = audio;
@@ -52,11 +54,32 @@ public class SingleWaveformPanel extends JPanel implements
 			drawWaveform(g, audio.getAudio(i), WAVEFORM_COLOR[i]);
 		}
 
+		FontMetrics metrics = g.getFontMetrics();
 		g.setColor(PLAY_MARKER_COLOR);
 		int pPos = streamPositionToViewPosition(playerPosition);
-		g.drawLine(pPos, 0, pPos, getHeight());
+		String playerTime = audio.toTimeStamp(playerPosition);
+		g.drawLine(pPos, 0, pPos, getHeight() - metrics.getHeight() - 2);
+		g.drawString(playerTime, pPos - metrics.stringWidth(playerTime) / 2, getHeight() - 2);
 		// System.out.println(pPos);
 
+		if (markerPos > 0) {
+			g.setColor(Color.PINK);
+			playerTime = audio.toTimeStamp(viewPositionToStreamPosition(markerPos));
+			g.drawLine(markerPos, 0, markerPos, getHeight() - metrics.getHeight() - 2);
+			g.drawString(playerTime, markerPos - metrics.stringWidth(playerTime) / 2, getHeight() - 2);
+		}
+		if (mode == Mode.ZOOM) {
+			Color trackColor = Color.PINK;
+			g.setColor(new Color(trackColor .getRed(), trackColor.getGreen(), trackColor.getBlue(), 20));
+			g.fillRect(zoomStartPos, 0, zoomEndPos - zoomStartPos, getHeight());
+			g.setColor(trackColor);
+			g.drawLine(zoomStartPos, 0, zoomStartPos, getHeight() - metrics.getHeight() -2);
+			g.drawLine(zoomEndPos, 0, zoomEndPos, getHeight() - metrics.getHeight() -2);
+			playerTime = audio.toTimeStamp(viewPositionToStreamPosition(zoomStartPos));
+			g.drawString(playerTime, zoomStartPos - metrics.stringWidth(playerTime) / 2, getHeight() - 2);
+			playerTime = audio.toTimeStamp(viewPositionToStreamPosition(zoomEndPos));
+			g.drawString(playerTime, zoomEndPos - metrics.stringWidth(playerTime) / 2, getHeight() - 2);
+		}
 		for (Track track : tracks) {
 			Color trackColor = Color.GREEN;
 
@@ -68,14 +91,21 @@ public class SingleWaveformPanel extends JPanel implements
 			int x1 = streamPositionToViewPosition(track.getStreamStartPos());
 			int x2 = streamPositionToViewPosition(track.getStreamEndPos());
 
-			g.setColor(new Color(trackColor.getRed(), trackColor.getGreen(),
-					trackColor.getBlue(), 20));
-			g.fillRect(x1, 0, x2 - x1, getHeight());
-			g.setColor(trackColor);
-			g.drawLine(x1, 0, x1, getHeight());
-			g.drawLine(x2, 0, x2, getHeight());
+			drawAlphaRect(g, trackColor, x1, x2);
 		}
 
+		g.setColor(REFERENCE_LINE_COLOR);
+		g.drawString(audio.toTimeStamp(audio.getStartPos()), 2, getHeight() - 2);
+		String endTime = audio.toTimeStamp(audio.getEndPos());
+		g.drawString(endTime, getWidth() - metrics.stringWidth(endTime) - 2, getHeight() - 2);
+	}
+
+	private void drawAlphaRect(Graphics g, Color trackColor, int x1, int x2) {
+		g.setColor(new Color(trackColor.getRed(), trackColor.getGreen(), trackColor.getBlue(), 20));
+		g.fillRect(x1, 0, x2 - x1, getHeight());
+		g.setColor(trackColor);
+		g.drawLine(x1, 0, x1, getHeight());
+		g.drawLine(x2, 0, x2, getHeight());
 	}
 
 	protected void drawWaveform(Graphics g, int[] samples, Color color) {
@@ -87,7 +117,7 @@ public class SingleWaveformPanel extends JPanel implements
 		int oldY = (int) (getHeight() / 2);
 		int xIndex = 0;
 
-		int increment = 1;//helper.getIncrement(helper.getXScaleFactor(getWidth(
+		int increment = 1;// helper.getIncrement(helper.getXScaleFactor(getWidth(
 		// )));
 		g.setColor(color);
 
@@ -143,14 +173,12 @@ public class SingleWaveformPanel extends JPanel implements
 
 	public long viewPositionToStreamPosition(int viewXPosition) {
 		long span = audio.getEndPos() - audio.getStartPos();
-		return (long) (span * (viewXPosition / (getWidth() * 1.0)) + audio
-				.getStartPos());
+		return (long) (span * (viewXPosition / (getWidth() * 1.0)) + audio.getStartPos());
 	}
 
 	public int streamPositionToViewPosition(long streamPosition) {
 		long span = audio.getEndPos() - audio.getStartPos();
-		double xPos = ((streamPosition - audio.getStartPos()) / (span * 1.0))
-				* getWidth();
+		double xPos = ((streamPosition - audio.getStartPos()) / (span * 1.0)) * getWidth();
 		return (int) xPos;
 	}
 
@@ -166,28 +194,35 @@ public class SingleWaveformPanel extends JPanel implements
 		audio.setEndPos(center + context);
 		long time = System.currentTimeMillis();
 		new ReaderThread().start();
-		//audio.createSampleArrayCollection(getWidth());
+		// audio.createSampleArrayCollection(getWidth());
 		System.out.println((System.currentTimeMillis() - time) + "ms");
 		repaint();
 	}
 
 	public void zoomOut() {
 		long span = audio.getEndPos() - audio.getStartPos();
-		long skip = span / 2;
-		audio.setStartPos(audio.getStartPos() - skip);
-		audio.setEndPos(audio.getEndPos() + skip);
+		if (span == 0) {
+
+			audio.setStartPos(audio.getStartPos() - getWidth() / 2);
+			audio.setEndPos(audio.getEndPos() + getWidth() / 2);
+		} else {
+			long skip = span / 2;
+			audio.setStartPos(audio.getStartPos() - skip);
+			audio.setEndPos(audio.getEndPos() + skip);
+		}
 		new ReaderThread().start();
-		//audio.createSampleArrayCollection(getWidth());
+		// audio.createSampleArrayCollection(getWidth());
 		repaint();
 	}
 
-	private class ReaderThread extends Thread{
+	private class ReaderThread extends Thread {
 		@Override
 		public void run() {
 			audio.createSampleArrayCollection(getWidth());
+			repaint();
 		}
 	}
-	
+
 	@Override
 	public void positionChanged(long newPosition) {
 		playerPosition = newPosition;
@@ -199,8 +234,7 @@ public class SingleWaveformPanel extends JPanel implements
 			}
 		} else {
 			for (Track track : tracks) {
-				if (playerPosition >= track.getStreamStartPos()
-						&& playerPosition <= track.getStreamEndPos()) {
+				if (playerPosition >= track.getStreamStartPos() && playerPosition <= track.getStreamEndPos()) {
 					currentPlayedTrack = track;
 					break;
 				}
@@ -239,4 +273,27 @@ public class SingleWaveformPanel extends JPanel implements
 	public void componentShown(ComponentEvent e) {
 	}
 
+	public void setMarkerPos(int x) {
+		this.markerPos = x;
+	}
+
+	public void setZoomStartPos(int x) {
+		this.zoomStartPos = x;
+	}
+
+	public void setZoomEndPos(int x) {
+		this.zoomEndPos = x;
+	}
+
+	public void zoomSelection() {
+		if (zoomStartPos != zoomEndPos) {
+			System.out.println(zoomStartPos + "-" + zoomEndPos);
+			audio.setStartPos(viewPositionToStreamPosition(zoomStartPos));
+			audio.setEndPos(viewPositionToStreamPosition(zoomEndPos));
+			mode = Mode.NONE;
+			new ReaderThread().start();
+		}
+		zoomStartPos = -1;
+		zoomEndPos = -1;
+	}
 }

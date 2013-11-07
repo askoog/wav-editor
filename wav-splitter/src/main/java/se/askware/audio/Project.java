@@ -142,4 +142,8 @@ public class Project {
 		return properties;
 	}
 
+	public void setWaveFile(File waveFile) {
+		setProperty(Key.WAV_FILE_PATH, waveFile.getAbsolutePath());
+	}
+
 }

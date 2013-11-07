@@ -4,8 +4,10 @@
 package se.askware.audio;
 
 import java.awt.Cursor;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
@@ -35,6 +37,8 @@ final class WavMouseMotionListener implements MouseMotionListener {
 			if (track.getStreamEndPos() <= track.getStreamStartPos()) {
 				panel.setMode(Mode.MOVE_START);
 			}
+		} else {
+			panel.setZoomEndPos(e.getX());			
 		}
 		panel.repaint();
 		((AbstractTableModel) tableModel).fireTableDataChanged();
@@ -42,6 +46,14 @@ final class WavMouseMotionListener implements MouseMotionListener {
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
+		panel.setMarkerPos(e.getX());
+
+		panel.setCursor(panel.getToolkit().createCustomCursor(
+	            new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0),
+	            "null"));
+		panel.setCursor(Cursor.getDefaultCursor());
+		panel.setMode(Mode.NONE);
+
 		for (Track track : panel.getTracks()) {
 
 			Cursor resizeCursor = Cursor
@@ -59,10 +71,9 @@ final class WavMouseMotionListener implements MouseMotionListener {
 				panel.setCurrentEditedTrack(track);
 				break;
 			} else {
-				panel.setCursor(Cursor
-						.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-				panel.setMode(Mode.NONE);
+//				panel.setCursor(null);
 			}
 		}
+		panel.repaint();
 	}
 }

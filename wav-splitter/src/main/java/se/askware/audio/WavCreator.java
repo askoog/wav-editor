@@ -1,5 +1,6 @@
 package se.askware.audio;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -17,7 +18,7 @@ public class WavCreator {
 			UnsupportedAudioFileException, IOException {
 
 		AudioInputStream audioInputStream = AudioSystem
-				.getAudioInputStream(new FileInputStream(srcFile));
+				.getAudioInputStream(new BufferedInputStream(new FileInputStream(srcFile)));
 		skip(audioInputStream, startPos);
 
 		AudioInputStream audioInputStream2 = new AudioInputStream(

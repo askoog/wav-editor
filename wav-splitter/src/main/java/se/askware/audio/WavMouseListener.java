@@ -19,7 +19,9 @@ final class WavMouseListener extends MouseAdapter {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		if (e.getClickCount() == 2) {
+		if (e.getButton() != MouseEvent.BUTTON2) {
+			panel.zoomOut();
+		} else if (e.getClickCount() == 2) {
 			panel.zoomIn(e.getX());
 
 		} else {
@@ -28,7 +30,8 @@ final class WavMouseListener extends MouseAdapter {
 		}
 		panel.requestFocus();
 		panel.repaint();
-
+		System.out.println("CLick");
+		panel.setMode(Mode.NONE);
 	}
 
 	@Override
@@ -36,13 +39,24 @@ final class WavMouseListener extends MouseAdapter {
 		if (e.isControlDown()) {
 			panel.createNewTrack(e.getX());
 			panel.setMode(Mode.MOVE_END);
+		} else {
+			System.out.println(e.isConsumed());
+			panel.setMode(Mode.ZOOM);
+			System.out.println("Zoom");
+			panel.setZoomStartPos(e.getX());
 		}
+		panel.setMarkerPos(0);
 		panel.repaint();
-
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
+		System.out.println("release");
+
+		if (panel.getMode() == Mode.ZOOM) {
+			panel.setZoomEndPos(e.getX());
+			panel.zoomSelection();
+		}
 		panel.setMode(Mode.NONE);
 		panel.setCurrentEditedTrack(null);
 	}
@@ -50,5 +64,11 @@ final class WavMouseListener extends MouseAdapter {
 	@Override
 	public void mouseEntered(MouseEvent e) {
 		panel.requestFocus();
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		panel.setMarkerPos(0);
+		panel.repaint();
 	}
 }
