@@ -13,6 +13,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 
+import com.google.common.base.Optional;
+
 import layout.SpringUtilities;
 
 public class PropertiesPanel extends JPanel {
@@ -86,15 +88,14 @@ public class PropertiesPanel extends JPanel {
 	}
 
 	private JButton createSelectBaseDirButton() {
-		return FileSelectHelper.getOpenDirButton(this,
-				new FileSelectedCallback() {
+		return FileSelectHelper.getOpenDirButton(this, new FileSelectedCallback() {
 
-					@Override
-					public void fileSelected(File f) {
-						baseDirTextField.setText(f.getAbsolutePath());
-					}
+			@Override
+			public void fileSelected(File f) {
+				baseDirTextField.setText(f.getAbsolutePath());
+			}
 
-				});
+		});
 	}
 
 	private JButton createSelectIconButton() {
@@ -104,64 +105,57 @@ public class PropertiesPanel extends JPanel {
 			public void fileSelected(File selectedFile) {
 				if (selectedFile.length() > 128 * 1024) {
 					JOptionPane.showMessageDialog(PropertiesPanel.this,
-							"File must not be lager than 128 kb. Selected file size is "
-									+ selectedFile.length() / 1024
-									+ " kb. Please select another file.", "",
-							JOptionPane.ERROR_MESSAGE);
+							"File must not be lager than 128 kb. Selected file size is " + selectedFile.length() / 1024
+									+ " kb. Please select another file.", "", JOptionPane.ERROR_MESSAGE);
 				} else {
 					String path = selectedFile.getAbsolutePath();
 					imagePathTextField.setText(path);
-					viewIcon(path);
+					viewIcon(Optional.of(selectedFile));
 				}
 			}
 
 		};
-		return FileSelectHelper.getOpenFileButton(this, callback,
-				"Image files", "jpg", "png", "gif");
+		return FileSelectHelper.getOpenFileButton(this, callback, "Image files", "jpg", "png", "gif");
 	}
 
 	private JButton createSelectLameEncoderButton() {
-		return FileSelectHelper.getOpenFileButton(this,
-				new FileSelectedCallback() {
+		return FileSelectHelper.getOpenFileButton(this, new FileSelectedCallback() {
 
-					@Override
-					public void fileSelected(File f) {
-						lameEncoderPathTextField.setText(f.getAbsolutePath());
-					}
+			@Override
+			public void fileSelected(File f) {
+				lameEncoderPathTextField.setText(f.getAbsolutePath());
+			}
 
-				}, "Lame executable", "exe");
+		}, "Lame executable", "exe");
 	}
 
-	public void initProperties(Properties properties) {
-		nameTextField.setText(properties.getProperty("album.name"));
-		artistTextField.setText(properties.getProperty("album.artist"));
-		genreTextField.setText(properties.getProperty("album.genre"));
-		baseDirTextField.setText(properties.getProperty("project.basedir"));
-		String iconPath = properties.getProperty("album.icon");
-		imagePathTextField.setText(iconPath);
+	public void initProperties(Project project) {
+		nameTextField.setText(project.getAlbumName());
+		artistTextField.setText(project.getAlbumArtist());
+		genreTextField.setText(project.getAlbumGenre());
+		baseDirTextField.setText(project.getProjectBasedir().getAbsolutePath());
+		Optional<File> iconPath = project.getAlbumIcon();
+		imagePathTextField.setText(iconPath.or(new File(".")).getAbsolutePath());
 		viewIcon(iconPath);
-		lameEncoderPathTextField.setText(properties
-				.getProperty("lame.encoder.path"));
+		lameEncoderPathTextField.setText(project.getLameEncoderPath());
 	}
 
-	public void setProperties(Properties properties) {
-		properties.setProperty("album.name", nameTextField.getText());
-		properties.setProperty("album.artist", artistTextField.getText());
-		properties.setProperty("album.genre", genreTextField.getText());
-		properties.setProperty("project.basedir", baseDirTextField.getText());
-		properties.setProperty("album.icon", imagePathTextField.getText());
-		properties.setProperty("lame.encoder.path", lameEncoderPathTextField
-				.getText());
+	public void setProperties(Project project) {
+		project.setAlbumName(nameTextField.getText());
+		project.setAlbumArtist(artistTextField.getText());
+		project.setAlbumGenre(genreTextField.getText());
+		project.setProjectBasedir(baseDirTextField.getText());
+		project.setAlbumIconPath(imagePathTextField.getText());
+		project.setLameEncoderPath(lameEncoderPathTextField.getText());
 	}
 
-	private void viewIcon(String iconPath) {
-		if (iconPath == null || !new File(iconPath).exists()) {
-			imageLabel.setIcon(null);
-		} else {
-			ImageIcon icon = new ImageIcon(iconPath);
-			Image scaledImage = icon.getImage().getScaledInstance(200, 200,
-					Image.SCALE_SMOOTH);
+	private void viewIcon(Optional<File> iconFile) {
+		if (iconFile.isPresent() && iconFile.get().exists()) {
+			ImageIcon icon = new ImageIcon(iconFile.get().getAbsolutePath());
+			Image scaledImage = icon.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
 			imageLabel.setIcon(new ImageIcon(scaledImage));
+		} else {
+			imageLabel.setIcon(null);
 		}
 	}
 

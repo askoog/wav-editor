@@ -52,4 +52,9 @@ public class Track implements Comparable<Track> {
 		this.streamEndPos = streamEndPos;
 	}
 
+	public int getBitRate() {
+		// TODO: Support for various bitrate
+		return 192;
+	}
+
 }

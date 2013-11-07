@@ -9,6 +9,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
+import com.google.common.base.Optional;
+
 public class LameEncoder {
 
 	private File lameExec;
@@ -16,14 +18,12 @@ public class LameEncoder {
 	public LameEncoder(File lameExec) {
 		this.lameExec = lameExec;
 		if (!lameExec.exists()) {
-			throw new IllegalArgumentException(
-					"Lame.exe does not exist at path "
-							+ lameExec.getAbsolutePath());
+			throw new IllegalArgumentException("Lame.exe does not exist at path " + lameExec.getAbsolutePath());
 		}
 	}
 
-	public void encode(File wavFile, File outFile, Track info, Properties props)
-			throws IOException, InterruptedException {
+	public void encode(File wavFile, File outFile, Track info, Project project) throws IOException,
+			InterruptedException {
 		List<String> commands = new ArrayList<String>();
 		commands.add(lameExec.getAbsolutePath());
 		commands.add("-h");
@@ -33,26 +33,26 @@ public class LameEncoder {
 		commands.add("--tt");
 		commands.add(info.getName());
 		commands.add("--tn");
-		commands.add(info.getTrackId() + "/" + props.getProperty("num.tracks")); // TODO
+		commands.add(info.getTrackId() + "/" + project.getNumTracks()); // TODO
 		commands.add("--ta");
-		commands.add("" + props.getProperty("album.artist"));
+		commands.add("" + project.getAlbumArtist());
 		commands.add("--ty");
 		commands.add("" + Calendar.getInstance().get(Calendar.YEAR));
 		commands.add("-b");
-		commands.add("192");
+		commands.add("" + info.getBitRate());
 		commands.add("--tl");
-		commands.add("" + props.getProperty("album.name"));
+		commands.add("" + project.getAlbumName());
 		commands.add("--tg");
-		commands.add("" + props.getProperty("album.genre"));
-		commands.add("--ti");
-		commands.add("" + props.getProperty("album.icon"));
-
+		commands.add("" + project.getAlbumGenre());
+		Optional<File> albumIconFile = project.getAlbumIcon();
+		if (albumIconFile.isPresent()) {
+			commands.add("--ti");
+			commands.add("" + albumIconFile);
+		}
 		commands.add(wavFile.getAbsolutePath());
 		commands.add(outFile.getAbsolutePath());
-		Process process = Runtime.getRuntime().exec(
-				commands.toArray(new String[commands.size()]));
-		BufferedReader r = new BufferedReader(new InputStreamReader(process
-				.getErrorStream()));
+		Process process = Runtime.getRuntime().exec(commands.toArray(new String[commands.size()]));
+		BufferedReader r = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 		String s;
 		while ((s = r.readLine()) != null) {
 			System.err.println(s);

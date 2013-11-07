@@ -34,12 +34,14 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 
+import com.google.common.base.Optional;
+
 public class WaveSplitter {
 
 	private static final int DEFAULT_HEIGHT = 500;
 	private static final int DEFAULT_WIDTH = 800;
 	private File propertiesFile;
-	private Properties properties;
+	private Project project;
 	private JFrame frame;
 	private WavFilePlayer player;
 	private File waveFile;
@@ -70,7 +72,7 @@ public class WaveSplitter {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				properties = new Properties();
+				project = new Project();
 				loadProject();
 			}
 
@@ -108,11 +110,9 @@ public class WaveSplitter {
 		try {
 			frame.getContentPane().removeAll();
 
-			String waveFilePath = properties.getProperty("wavfile.path");
-			if (waveFilePath != null) {
-				waveFile = new File(waveFilePath);
-			}
-			if (waveFile == null || !waveFile.exists()) {
+			Optional<File> waveFileOptional = project.getWavFile();
+			File wavFile = waveFileOptional.orNull();
+			if (!waveFileOptional.isPresent() || !waveFile.exists()) {
 				JFileChooser chooser = new JFileChooser(new File("."));
 				FileNameExtensionFilter filter = new FileNameExtensionFilter(
 						"Wave File", "wav");
@@ -124,9 +124,7 @@ public class WaveSplitter {
 			}
 
 			audioInfo = new AudioInfo(waveFile, DEFAULT_WIDTH);
-			tracks = new TracksHandler();
-
-			tracks.loadTracks(properties);
+			tracks = project.loadTracks();
 
 			waveDisplayPanel = new SingleWaveformPanel(audioInfo, tracks);
 			waveDisplayPanel.setMinimumSize(new Dimension(500, DEFAULT_HEIGHT));
@@ -174,10 +172,10 @@ public class WaveSplitter {
 		int returnVal = chooser.showOpenDialog(null);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			propertiesFile = chooser.getSelectedFile();
+			project.load(propertiesFile);
+		} else {
+			System.err.println("No file selected");
 		}
-		// new File("wavesplit.properties");
-		properties = new Properties();
-		properties.load(new FileInputStream(propertiesFile));
 	}
 
 	private void initTrackPanel() {
@@ -187,13 +185,13 @@ public class WaveSplitter {
 		createWavButton.setIcon(new ImageIcon("accept.png"));
 		createWavButton.setToolTipText("Create wave and mp3 files");
 		createWavButton.addActionListener(new CreateWavAction(waveDisplayPanel,
-				tracks, waveFile, properties));
+				tracks, waveFile, project));
 
 		JButton saveButton = new JButton();
 		saveButton.setIcon(new ImageIcon("save.png"));
 		saveButton.setToolTipText("Save");
 
-		saveButton.addActionListener(new SaveDataAction(properties,
+		saveButton.addActionListener(new SaveDataAction(project.getProperties(),
 				propertiesFile, tracks));
 
 		JButton zoomInButton = new JButton(new ImageIcon("zoom_in.png"));
@@ -243,12 +241,12 @@ public class WaveSplitter {
 			public void actionPerformed(ActionEvent e) {
 
 				PropertiesPanel propsPanel = new PropertiesPanel();
-				propsPanel.initProperties(properties);
+				propsPanel.initProperties(project);
 				int result = JOptionPane.showOptionDialog(frame, propsPanel,
 						"properties", JOptionPane.OK_CANCEL_OPTION,
 						JOptionPane.PLAIN_MESSAGE, null, null, null);
 				if (result == JOptionPane.OK_OPTION) {
-					propsPanel.setProperties(properties);
+					propsPanel.setProperties(project);
 				}
 			}
 
@@ -324,7 +322,7 @@ public class WaveSplitter {
 		int returnVal = chooser.showSaveDialog(frame);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			propertiesFile = chooser.getSelectedFile();
-			properties = new Properties();
+			project = new Project();
 		}
 	}
 
