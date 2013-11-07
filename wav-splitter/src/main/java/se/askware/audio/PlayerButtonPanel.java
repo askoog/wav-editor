@@ -20,7 +20,7 @@ public class PlayerButtonPanel extends JPanel {
 	}
 
 	private void initGraphics(final PlayerController controller) {
-		final JButton playButton = new JButton(new ImageIcon("play.png"));
+		final JButton playButton = createImageButton("play.png");
 		playButton.setToolTipText("Start playback (space bar)");
 		playButton.addActionListener(new ActionListener() {
 			@Override
@@ -32,17 +32,17 @@ public class PlayerButtonPanel extends JPanel {
 
 			@Override
 			public void playerStarted() {
-				playButton.setIcon(new ImageIcon("stop.png"));
+				playButton.setIcon(new ImageIcon(getClass().getResource("/stop.png")));
 			}
 
 			@Override
 			public void playerStopped() {
-				playButton.setIcon(new ImageIcon("play.png"));
+				playButton.setIcon(new ImageIcon(getClass().getResource("/play.png")));
 			}
 
 		});
 
-		JButton forwardButton = new JButton(new ImageIcon("fast_forward.png"));
+		JButton forwardButton = createImageButton("fast_forward.png");
 		forwardButton.setToolTipText("Fast forward (right arrow)");
 		forwardButton.addActionListener(new ActionListener() {
 
@@ -52,7 +52,7 @@ public class PlayerButtonPanel extends JPanel {
 			}
 
 		});
-		JButton rewindButton = new JButton(new ImageIcon("rewind.png"));
+		JButton rewindButton = createImageButton("rewind.png");
 		rewindButton.setToolTipText("Fast backward (left arrow)");
 		rewindButton.addActionListener(new ActionListener() {
 
@@ -63,7 +63,7 @@ public class PlayerButtonPanel extends JPanel {
 
 		});
 
-		JButton nextButton = new JButton(new ImageIcon("skip_forward.png"));
+		JButton nextButton = createImageButton("skip_forward.png");
 		nextButton
 				.setToolTipText("Skip forward to track boundary (Shift + right arrow)");
 		nextButton.addActionListener(new ActionListener() {
@@ -74,7 +74,7 @@ public class PlayerButtonPanel extends JPanel {
 			}
 
 		});
-		JButton previousButton = new JButton(new ImageIcon("skip_backward.png"));
+		JButton previousButton = createImageButton("skip_backward.png");
 		previousButton
 				.setToolTipText("Skip backward to track boundary (Shift + left arrow)");
 		previousButton.addActionListener(new ActionListener() {
@@ -100,6 +100,10 @@ public class PlayerButtonPanel extends JPanel {
 		add(playButton);
 		add(forwardButton);
 		add(nextButton);
+	}
+
+	private JButton createImageButton(String iconFileName) {
+		return new JButton(new ImageIcon(getClass().getResource("/" + iconFileName)));
 	}
 
 }
