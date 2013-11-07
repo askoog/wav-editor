@@ -78,8 +78,7 @@ public class WaveSplitter {
 
 		});
 		p.add(newButton);
-		JButton openButton = new JButton("Existing project", new ImageIcon(
-				getClass().getResource("/folder.png")));
+		JButton openButton = new JButton("Existing project", new ImageIcon(getClass().getResource("/folder.png")));
 		openButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -114,8 +113,7 @@ public class WaveSplitter {
 			File wavFile = waveFileOptional.orNull();
 			if (!waveFileOptional.isPresent() || !waveFile.exists()) {
 				JFileChooser chooser = new JFileChooser(new File("."));
-				FileNameExtensionFilter filter = new FileNameExtensionFilter(
-						"Wave File", "wav");
+				FileNameExtensionFilter filter = new FileNameExtensionFilter("Wave File", "wav");
 				chooser.setFileFilter(filter);
 				int returnVal = chooser.showOpenDialog(frame);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -128,8 +126,7 @@ public class WaveSplitter {
 
 			waveDisplayPanel = new SingleWaveformPanel(audioInfo, tracks);
 			waveDisplayPanel.setMinimumSize(new Dimension(500, DEFAULT_HEIGHT));
-			waveDisplayPanel.setPreferredSize(new Dimension(DEFAULT_WIDTH,
-					DEFAULT_HEIGHT));
+			waveDisplayPanel.setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
 
 			player = new WavFilePlayer(waveFile);
 			player.addPlayerPositionListener(waveDisplayPanel);
@@ -145,11 +142,9 @@ public class WaveSplitter {
 			// Object[][] {{"X", "Y"}}, new String[] {"A","B"})),
 			// BorderLayout.SOUTH);
 
-			waveDisplayPanel.addMouseListener(new WavMouseListener(
-					waveDisplayPanel, player));
+			waveDisplayPanel.addMouseListener(new WavMouseListener(waveDisplayPanel, player));
 
-			waveDisplayPanel.addMouseMotionListener(new WavMouseMotionListener(
-					waveDisplayPanel, tableModel));
+			waveDisplayPanel.addMouseMotionListener(new WavMouseMotionListener(waveDisplayPanel, tableModel));
 
 			waveDisplayPanel.setFocusable(true);
 
@@ -166,8 +161,7 @@ public class WaveSplitter {
 
 	private void loadProperties() throws IOException, FileNotFoundException {
 		JFileChooser chooser = new JFileChooser(new File("."));
-		FileNameExtensionFilter filter = new FileNameExtensionFilter(
-				"Wave File Splitter Properties file", "properties");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Wave File Splitter Properties file", "properties");
 		chooser.setFileFilter(filter);
 		int returnVal = chooser.showOpenDialog(null);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -180,21 +174,16 @@ public class WaveSplitter {
 
 	private void initTrackPanel() {
 		tableModel = new TracksTableModel(audioInfo, tracks);
-		JButton createWavButton = new JButton();
-
-		createWavButton.setIcon(new ImageIcon("accept.png"));
+		JButton createWavButton = createImageButton("accept.png");
 		createWavButton.setToolTipText("Create wave and mp3 files");
-		createWavButton.addActionListener(new CreateWavAction(waveDisplayPanel,
-				tracks, waveFile, project));
+		createWavButton.addActionListener(new CreateWavAction(waveDisplayPanel, tracks, waveFile, project));
 
-		JButton saveButton = new JButton();
-		saveButton.setIcon(new ImageIcon("save.png"));
+		JButton saveButton = createImageButton("save.png");
 		saveButton.setToolTipText("Save");
 
-		saveButton.addActionListener(new SaveDataAction(project.getProperties(),
-				propertiesFile, tracks));
+		saveButton.addActionListener(new SaveDataAction(project.getProperties(), propertiesFile, tracks));
 
-		JButton zoomInButton = new JButton(new ImageIcon("zoom_in.png"));
+		JButton zoomInButton = createImageButton("zoom_in.png");
 		zoomInButton.setToolTipText("Zoom in (up arrow)");
 		zoomInButton.addActionListener(new ActionListener() {
 
@@ -205,7 +194,7 @@ public class WaveSplitter {
 
 		});
 
-		JButton zoomOutButton = new JButton(new ImageIcon("zoom_out.png"));
+		JButton zoomOutButton = createImageButton("zoom_out.png");
 		zoomOutButton.setToolTipText("Zoom out (down arrow)");
 		zoomOutButton.addActionListener(new ActionListener() {
 
@@ -216,15 +205,14 @@ public class WaveSplitter {
 
 		});
 
-		JButton deleteButton = new JButton(new ImageIcon("delete.png"));
+		JButton deleteButton = createImageButton("delete.png");
 		deleteButton.setToolTipText("Remove selected track");
 		deleteButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (trackTable.getSelectedRow() >= 0) {
-					tracks.removeTrack(tracks.getTrack(trackTable
-							.getSelectedRow()));
+					tracks.removeTrack(tracks.getTrack(trackTable.getSelectedRow()));
 					((AbstractTableModel) tableModel).fireTableDataChanged();
 					waveDisplayPanel.repaint();
 				}
@@ -232,8 +220,7 @@ public class WaveSplitter {
 
 		});
 
-		JButton propertiesButton = new JButton(new ImageIcon(
-				"notebook_edit.png"));
+		JButton propertiesButton = createImageButton("notebook_edit.png");
 		propertiesButton.setToolTipText("Edit project properties");
 		propertiesButton.addActionListener(new ActionListener() {
 
@@ -242,9 +229,8 @@ public class WaveSplitter {
 
 				PropertiesPanel propsPanel = new PropertiesPanel();
 				propsPanel.initProperties(project);
-				int result = JOptionPane.showOptionDialog(frame, propsPanel,
-						"properties", JOptionPane.OK_CANCEL_OPTION,
-						JOptionPane.PLAIN_MESSAGE, null, null, null);
+				int result = JOptionPane.showOptionDialog(frame, propsPanel, "properties",
+						JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
 				if (result == JOptionPane.OK_OPTION) {
 					propsPanel.setProperties(project);
 				}
@@ -254,23 +240,21 @@ public class WaveSplitter {
 
 		trackPanel = new JPanel(new BorderLayout());
 		trackTable = new JTable(tableModel);
-		trackTable.getSelectionModel().setSelectionMode(
-				ListSelectionModel.SINGLE_SELECTION);
-		trackTable.getSelectionModel().addListSelectionListener(
-				new ListSelectionListener() {
+		trackTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		trackTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
-					@Override
-					public void valueChanged(ListSelectionEvent e) {
-						if (!e.getValueIsAdjusting()) {
-							int selectedRow = trackTable.getSelectedRow();
-							if (selectedRow >= 0) {
-								Track track = tracks.getTrack(selectedRow);
-								player.setPosition(track.getStreamStartPos());
-							}
-						}
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				if (!e.getValueIsAdjusting()) {
+					int selectedRow = trackTable.getSelectedRow();
+					if (selectedRow >= 0) {
+						Track track = tracks.getTrack(selectedRow);
+						player.setPosition(track.getStreamStartPos());
 					}
+				}
+			}
 
-				});
+		});
 		DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
 		cellRenderer.setHorizontalAlignment(SwingConstants.CENTER);
 		trackTable.getColumnModel().getColumn(0).setPreferredWidth(10);
@@ -314,10 +298,13 @@ public class WaveSplitter {
 		trackPanel.add(buttonPanel, BorderLayout.SOUTH);
 	}
 
+	private JButton createImageButton(String imageFileName) {
+		return new JButton(new ImageIcon(getClass().getResource("/" + imageFileName)));
+	}
+
 	private void newProject() {
 		JFileChooser chooser = new JFileChooser(new File("."));
-		FileNameExtensionFilter filter = new FileNameExtensionFilter(
-				"Properties file", "properties");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Properties file", "properties");
 		chooser.setFileFilter(filter);
 		int returnVal = chooser.showSaveDialog(frame);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
