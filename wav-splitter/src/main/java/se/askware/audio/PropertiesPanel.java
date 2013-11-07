@@ -135,7 +135,7 @@ public class PropertiesPanel extends JPanel {
 		genreTextField.setText(project.getAlbumGenre());
 		baseDirTextField.setText(project.getProjectBasedir().getAbsolutePath());
 		Optional<File> iconPath = project.getAlbumIcon();
-		imagePathTextField.setText(iconPath.or(new File(".")).getAbsolutePath());
+		imagePathTextField.setText(iconPath.or(new File("")).getAbsolutePath());
 		viewIcon(iconPath);
 		lameEncoderPathTextField.setText(project.getLameEncoderPath());
 	}

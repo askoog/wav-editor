@@ -101,7 +101,7 @@ public class Project {
 	}
 
 	public File getProjectBasedir() {
-		return getOptionalFile(getProperty(Key.PROJECT_BASEDIR)).or(new File("."));
+		return getOptionalFile(getProperty(Key.PROJECT_BASEDIR)).or(new File(""));
 	}
 
 	public void setProjectBasedir(String baseDir) {
