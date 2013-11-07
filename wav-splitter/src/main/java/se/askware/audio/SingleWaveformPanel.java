@@ -43,7 +43,6 @@ public class SingleWaveformPanel extends JPanel implements PlayerPositionListene
 	}
 
 	protected void paintComponent(Graphics g) {
-		System.out.println("r");
 		super.paintComponent(g);
 
 		int lineHeight = getHeight() / 2;
@@ -60,7 +59,6 @@ public class SingleWaveformPanel extends JPanel implements PlayerPositionListene
 		String playerTime = audio.toTimeStamp(playerPosition);
 		g.drawLine(pPos, 0, pPos, getHeight() - metrics.getHeight() - 2);
 		g.drawString(playerTime, pPos - metrics.stringWidth(playerTime) / 2, getHeight() - 2);
-		// System.out.println(pPos);
 
 		if (markerPos > 0) {
 			g.setColor(Color.PINK);

@@ -19,18 +19,16 @@ final class WavMouseListener extends MouseAdapter {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		if (e.getButton() != MouseEvent.BUTTON2) {
+		if (e.getButton() != MouseEvent.BUTTON1) {
 			panel.zoomOut();
 		} else if (e.getClickCount() == 2) {
 			panel.zoomIn(e.getX());
-
 		} else {
 			long position = panel.viewPositionToStreamPosition(e.getX());
 			player.setPosition(position);
 		}
 		panel.requestFocus();
 		panel.repaint();
-		System.out.println("CLick");
 		panel.setMode(Mode.NONE);
 	}
 
@@ -39,10 +37,8 @@ final class WavMouseListener extends MouseAdapter {
 		if (e.isControlDown()) {
 			panel.createNewTrack(e.getX());
 			panel.setMode(Mode.MOVE_END);
-		} else {
-			System.out.println(e.isConsumed());
+		} else if (panel.getMode() == Mode.NONE){
 			panel.setMode(Mode.ZOOM);
-			System.out.println("Zoom");
 			panel.setZoomStartPos(e.getX());
 		}
 		panel.setMarkerPos(0);
@@ -51,8 +47,6 @@ final class WavMouseListener extends MouseAdapter {
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		System.out.println("release");
-
 		if (panel.getMode() == Mode.ZOOM) {
 			panel.setZoomEndPos(e.getX());
 			panel.zoomSelection();

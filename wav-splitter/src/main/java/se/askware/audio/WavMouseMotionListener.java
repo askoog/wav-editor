@@ -47,10 +47,6 @@ final class WavMouseMotionListener implements MouseMotionListener {
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		panel.setMarkerPos(e.getX());
-
-		panel.setCursor(panel.getToolkit().createCustomCursor(
-	            new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0),
-	            "null"));
 		panel.setCursor(Cursor.getDefaultCursor());
 		panel.setMode(Mode.NONE);
 
@@ -70,8 +66,6 @@ final class WavMouseMotionListener implements MouseMotionListener {
 				panel.setMode(Mode.MOVE_END);
 				panel.setCurrentEditedTrack(track);
 				break;
-			} else {
-//				panel.setCursor(null);
 			}
 		}
 		panel.repaint();

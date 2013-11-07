@@ -3,7 +3,6 @@ package se.askware.audio;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.io.File;
-import java.util.Properties;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -13,9 +12,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 
-import com.google.common.base.Optional;
-
 import layout.SpringUtilities;
+
+import com.google.common.base.Optional;
 
 public class PropertiesPanel extends JPanel {
 
